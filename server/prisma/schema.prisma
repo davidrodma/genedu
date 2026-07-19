@@ -1,0 +1,150 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+//migrate SQL: npx prisma migrate dev --name init
+//migrate mongodb prisma: yarn prisma generate, primeira vez: yarn prisma db push
+//migrate mongodb pacote externo mongo-migrate-ts (não é padrão prisma):
+  //yarn mongo-migrate init (somente no caso que existir a configuração migrations.json)
+  //yarn mongo-migrate create nome_do_migration (cria migration)
+  //yarn mongo-migrate up (executa o migrate)
+  //yarn mongo-migrate down -l (desfaz o último migrate) 
+  //Obj. (só funciona em js compiliado)
+  
+datasource db {
+  //provider = "sqlite"
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  //id Int @id @default(autoincrement())
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  email    String @unique
+  password String
+  name String
+  role Role @default(USER)
+  telegram String @default("")
+  isVerified Boolean @default(false)
+  chatId String @default("")
+  code Int?  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  status Int @default(1)
+  
+}
+
+model AutoIncrement {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String @unique
+  count Int @default(0)
+}
+
+model ConfigGroup{
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  title String @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  status Int @default(1)
+  configs Config[]
+}
+
+model Config{
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name  String @unique
+  title String
+  description String
+  type String
+  configGroup  ConfigGroup @relation(fields: [configGroupId], references: [id])
+  configGroupId String @db.ObjectId
+  value String
+  jsonOptions Json? 
+  classAdd String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  status Int @default(1)
+}
+
+enum SourceType {
+  YOUTUBE
+  UPLOAD
+}
+
+model Content{
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  subject String
+  language String
+  messageError String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastStatus Int @default(0)
+  status Int @default(0)
+  media Media?
+  transcription Transcription?
+  textContent TextContent?
+  presentation Presentation?
+}
+
+model Media {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  contentId  String @unique @db.ObjectId
+  duration Int?
+  sizeBytes Int?
+  sourceType SourceType @default(YOUTUBE)
+  youtubeLink String?
+  mediaFile String?
+  mediaDescription String?
+  audioFilenames String[] @default([]) 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  content Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+}
+
+model Transcription {
+  id                    String              @id @default(auto()) @map("_id") @db.ObjectId
+  contentId  String @unique @db.ObjectId
+  transcriptionText String            // Cleaned/formatted text
+  transcriptFile String
+  transcriptionModel String?          // AI model used for transcription
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  content Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+}
+
+model TextContent {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  contentId String @unique @db.ObjectId
+  promptText String?
+  generatedText String?
+  textFile String?
+  textModel String?          // AI model used for text generation
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  content Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+}
+
+model Presentation {
+  id                    String              @id @default(auto()) @map("_id") @db.ObjectId
+  contentId  String              @unique @db.ObjectId
+  promptPresentation String?
+  presentationId String?
+  presentationFile String?
+  themeId String?
+  themeName String?
+  numCards Int?
+  imageOptions String?
+  imageModel String?
+  imageStyle String?
+  
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  
+  content   Content  @relation(fields: [contentId], references: [id], onDelete: Cascade)
+}

@@ -1,0 +1,38 @@
+{
+  "name": "genedu-client",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "autoprefixer": "^10.4.21",
+    "jsvectormap": "^1.7.0",
+    "next": "^15.5.4",
+    "nookies": "^2.5.2",
+    "primeicons": "^7.0.0",
+    "primereact": "^10.0.5",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-dropzone": "^14.3.8",
+    "react-hook-form": "^7.63.0",
+    "react-quill": "^2.0.0",
+    "react-youtube": "^10.1.0",
+    "sass": "^1.69.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.10",
+    "@types/node": "24.6.0",
+    "@types/react": "^19.1.15",
+    "eslint": "^9.36.0",
+    "eslint-config-next": "^15.5.4",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.9.2"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}

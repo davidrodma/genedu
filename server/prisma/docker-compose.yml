@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: mongodb
+    restart: unless-stopped  # Faz o container reiniciar automaticamente se o Docker/WSL reiniciar
+    ports:
+      - "27017:27017"       # Mapeia a porta 27017 do container para localhost
+    command: ["--replSet", "rs0", "--bind_ip_all"]  # Inicia o MongoDB em Replica Set (rs0) e aceita conexões externas
+    volumes:
+      - ./data:/data/db     # Persistência dos dados em ./data no host
+    environment:
+      MONGO_INITDB_DATABASE: genedu  # Nome do banco inicial
+
+# ===========================
+# PASSOS DE USO (comentados)
+# ===========================
+# 1. Crie a pasta para persistência de dados:
+#    mkdir -p ./data
+#
+# 2. Suba o container:
+#    docker-compose up -d
+#
+# 3. Conecte ao container para iniciar o Replica Set:
+#    docker exec -it mongodb mongosh
+#
+# 4. Dentro do mongosh, rode:
+#    rs.initiate({
+#      _id: "rs0",
+#      members: [{ _id: 0, host: "localhost:27017" }]
+#    })
+#
+# 5. Configure seu .env no NestJS/Prisma:
+#    DATABASE_URL="mongodb://localhost:27017/genedu?directConnection=true&replicaSet=rs0"
+#
+# 6. Rode suas migrações:
+#    npm run mongo-migrate:up
+#
+# ===========================
+# NOTAS IMPORTANTES
+# ===========================
+# - O Replica Set é necessário para que o Prisma suporte transações.
+# - Os dados ficam persistidos na pasta ./data mesmo que o container seja removido.
+# - A porta 27017 é a porta padrão do MongoDB.

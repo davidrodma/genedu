@@ -1,0 +1,55 @@
+@layer primereact {
+  /* Datatable */
+  .p-datatable tr {
+    @apply dark:bg-darkblack-600 dark:text-white border-b border-bgray-300 dark:border-darkblack-400 #{!important};
+    td {
+      @apply text-black dark:text-white #{!important};
+    }
+  }
+  .p-datatable {
+    .p-inputtext {
+      @apply dark:bg-darkblack-500 dark:text-bgray-50 dark:border-0 #{!important};
+    }
+    .p-paginator {
+      .p-paginator-pages .p-paginator-page.p-highlight {
+        @apply dark:bg-darkblack-500 dark:text-bgray-50 #{!important};
+      }
+      .p-dropdown {
+        @apply dark:border-0 dark:bg-darkblack-500 #{!important};
+      }
+    }
+
+    .p-datatable-tbody > tr.p-highlight {
+      @apply dark:bg-darkblack-500 dark:text-bgray-50 #{!important};
+    }
+  }
+
+  .p-datatable .p-datatable-thead > tr:nth-child(2) > th {
+    input.p-column-filter {
+      @apply w-full border-none rounded-md  bg-bgray-100 font-normal px-5 text-sm tracking-wide font-urbanist text-bgray-600 placeholder:text-sm placeholder:font-urbanist placeholder:text-bgray-500 focus:outline-none focus:ring-0 dark:bg-darkblack-500 #{!important};
+    }
+  }
+
+  /* Radio */
+  .p-radiobutton .p-radiobutton-box {
+    @apply border-solid border-2 border-bgray-300 #{!important};
+    &.p-highlight {
+      @apply border-success-300 #{!important};
+    }
+  }
+
+  /* Checkbox */
+  .p-checkbox .p-checkbox-box {
+    @apply border-solid border-2 border-bgray-300 #{!important};
+    &.p-highlight {
+      @apply border-success-300 #{!important};
+    }
+  }
+
+  /* Divider */
+  .p-divider {
+    &.p-divider-horizontal::before {
+      @apply border-t border-gray-200 dark:border-gray-700 #{!important};
+    }
+  }
+}

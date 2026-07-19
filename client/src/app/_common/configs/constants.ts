@@ -1,0 +1,5 @@
+export const auth_token_name = "auth.token"
+export const PATH_UPLOADS = "/uploads"
+export const MAX_MB_UPLOAD = "200MB"
+export const WEBSITE_TITLE = "GenEdu"
+export const EMAIL_CONTACT = "@davidrodma"

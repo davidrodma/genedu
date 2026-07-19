@@ -1,0 +1,5 @@
+{
+  "uri": "mongodb://localhost:27017/genedu",
+  "migrationsDir": "migrations/transactions",
+  "migrationsCollection": "migrations_changelog"
+}

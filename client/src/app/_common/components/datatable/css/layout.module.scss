@@ -1,0 +1,21 @@
+.myComponent {
+  table {
+    font-family: 'Urbanist';
+    tr {
+      th {
+        color: #718096;
+        padding-top: 10px;
+        padding-bottom: 26px;
+        /*border-top: 1px solid #e2e8f0;*/
+      }
+      td {
+        &.p-selection-column {
+          padding: 0 !important;
+        }
+        &:last-child {
+          padding-right: 5px !important;
+        }
+      }
+    }
+  }
+}
