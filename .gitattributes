@@ -1,0 +1,2 @@
+# PrimeReact theme assets (third-party) — exclude from GitHub language stats
+client/src/app/_common/assets/primereact/** linguist-vendored
