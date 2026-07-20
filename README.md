@@ -1,7 +1,46 @@
 # GenEdu - AI-Powered Educational Material Generation Platform
 
-## 🎯 Overview
-GenEdu is a comprehensive platform that automatically generates educational materials from media content using artificial intelligence. The system processes audio/video files through multiple AI-powered stages to create professional educational content with presentations (pptx).
+## 🎯 Visão Geral
+GenEdu é uma aplicação web que converte arquivos de áudio, vídeos ou links do YouTube em apresentações no estilo PowerPoint, usando Inteligência Artificial Generativa (IAGen). Esta ferramenta foi implementada exclusivamente para pesquisa de campo que resultou no manuscrito do artigo científico intitulado *"Geração de apresentações apoiada por Inteligência Artificial Generativa a partir de conteúdo de áudio"*. O processamento principal é composto por um pipeline que integra três APIs de IA:
+- **Whisper:** ferramenta de transcrição de fala da OpenAI que converte arquivos de áudio em texto;
+- **ChatGPT:** modelo de IAGen que receberá o texto transcrito e o reescreverá em um formato didático; 
+- **Gamma:** disponibilizado pela Gamma Tech Inc., para a composição de slides e a geração de imagens. 
+
+### Relevância ###
+Os slides, em particular, são amplamente utilizados para orientar aulas presenciais, palestras, reuniões, seminários e cursos online, bem como para explicar conceitos e apoiar a exposição oral; no entanto, elaborar apresentações do tipo PowerPoint é uma tarefa que exige tempo, escrita, seleção de exemplos e imagens, edição de conteúdo e diagramação, considerando aspectos estéticos e cognitivos da comunicação. Em um contexto em que profissionais como professores e palestrantes acumulam múltiplas tarefas, ferramentas capazes de auxiliar na elaboração de apresentações podem contribuir para otimizar esse material e apoiar o planejamento, já que o GenEdu é capaz de transformar o áudio ou vídeo gravado em pelo menos uma primeira versão de apresentação, aumentando a produtividade e reduzindo o esforço, a escrita, a estruturação, a diagramação e o tempo dedicado. 
+
+As apresentações resultante da GenEdu assemelha-se à da Figura 1 abaixo:
+
+[![Arquitetura em alto nível da GenEdu](./presentations-examples.png)](./presentations-examples.png)
+
+## 🏗️ Arquitetura
+O GenEdu foi desenvolvido na linguagem TypeScript, com o framework NestJS, para o backend, e executado em duas instâncias de servidores Node.js: a primeira para receber as requisições do frontend e a segunda para que os bots realizem o processamento intensivo em segundo plano (conversão de áudio, transcrição, geração de conteúdo e criação de slides). Dessa forma, a fila de tarefas pesadas para as APIs Whisper, ChatGPT e Gamma é executada de forma assíncrona no segundo servidor, isolado do restante da aplicação. No frontend, utilizou-se o framework Next.js em outra instância do Node.js, o que permite executar componentes React no servidor quando necessário. Para a persistência de dados, utilizou-se o banco de dados NoSQL MongoDB, com o ORM Prisma. 
+
+### Backend (NestJS)
+- **Framework**: NestJS with TypeScript
+- **Database**: MongoDB with Prisma ORM
+- **Processing**: Background bot service
+- **APIs**: OpenAI (Whisper + ChatGPT) and Gamma
+- **File Handling**: Local storage with metadata extraction
+- **Server Installation**: [README](./server/README.MD)
+
+### Frontend (Next.js)
+- **Framework**: Next.js 15 with App Router
+- **UI**: PrimeReact + Tailwind CSS
+- **State**: React Hook Form + Context API
+- **Auth**: JWT-based authentication
+- **Client Installation**: [README](./client/README.MD)
+
+### Diagramas Arquiteturais
+
+A Figura 2 apresenta o diagrama de componentes da arquitetura implantada. A modelagem dos componentes serve para mostrar as interfaces que fazem a ponte entre o modelo lógico e o físico (nó) em tempo de execução. Na camada de apresentação (Presentation Tier), o cliente remoto (Browser) acessa o sistema REST via HTTP. A seguir, na camada de aplicação (Middle Tier), um Reverse Proxy (Nginx) realiza o roteamento para as instâncias internas, encaminhando requisições para o nó do Frontend Server (Node.js/Next.js) ou ao nó do Backend Server (Node.js/Nest.js). As interfaces (ex.: IContent, IMedia, ITranscription, IPresentation) explicitam contratos entre os módulos. O Bot Processing Server é um nó independente que separa o processamento assíncrono do restante da aplicação, isolando em fila, tarefas intensivas. Ainda neste nó, as integrações externas (OpenAI API e Gamma API) são tratadas como serviços consumidos por meio de interfaces, o que evidencia as dependências externas do sistema. Por fim, na camada de dados (Data Tier), o Database Server (MongoDB) é acessado por meio do componente de persistência ORM (Prisma), conforme ilustrado na Figura 2.
+
+[![Diagrama de componentes do sistema implantado](./deployment-diagram.png)](./deployment-diagram.png)
+
+Para facilitar a compreensão das tecnologias empregadas, a Figura 2 apresenta a arquitetura do software em alto nível:
+
+[![Arquitetura em alto nível da GenEdu](./high-level-diagram.png)](./high-level-diagram.png)	
+
 
 ## ✨ Features
 
