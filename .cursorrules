@@ -1,344 +1,93 @@
-# GenEdu - AI-Powered Educational Material Generation Platform
+# GenEdu — Contexto para Cursor / IA
 
-## Project Overview
-GenEdu is a comprehensive platform that generates educational materials from media content using AI. The system processes audio/video files through multiple stages: download, conversion, transcription, text generation, and presentation creation.
+## O que é o projeto
 
-## Architecture
+GenEdu gera apresentações (PPTX) a partir de áudio, vídeo ou YouTube, para pesquisa acadêmica. Pipeline: download → conversão MP3 (FFmpeg) → Whisper → ChatGPT (texto didático) → Gamma (slides).
 
-### Backend (NestJS + MongoDB)
-- **Framework**: NestJS with TypeScript
-- **Database**: MongoDB with Prisma ORM
-- **File Storage**: Local file system in `uploads/medias/`
-- **Processing**: Background bot service with infinite loop
-- **APIs**: OpenAI (Whisper + ChatGPT) and Gamma (presentations)
+Stack: **NestJS 11 + Prisma 6 + MongoDB** (API + bot) e **Next.js 15 + React 19 + PrimeReact + Tailwind** (painel). TypeScript em ambos.
 
-### Frontend (Next.js + React)
-- **Framework**: Next.js 15 with App Router
-- **UI Library**: PrimeReact + Tailwind CSS
-- **State Management**: React Hook Form + Context API
-- **Authentication**: JWT-based with role management
+## Arquitetura em runtime
 
-## Core Workflow
+- **API Nest** (`yarn dev`): porta `PORT` (padrão 3001)
+- **Bot Nest** (`yarn bot:dev`, entry `bot`): porta `BOT_PORT` (padrão 3002); loop infinito no módulo `processing`
+- **Next**: porta 3000; `NEXT_PUBLIC_API_URL` aponta para `http://localhost:3001/api`
+- **Arquivos**: `PATH_UPLOADS` + `medias/` (mídia/áudio) e `docs/` (texto/PPTX). Em dev costuma ser `../client/public/uploads/`
+- **Chaves OpenAI/Gamma**: tabela `Config` (`openai-api-key`, `gamma-api-key`), editáveis no painel — **não** usar env `OPENAI_API_KEY` / `GAMMA_API_KEY`
+- YouTube: **`youtube-dl-exec`** (yt-dlp), não `@distube/ytdl-core`
 
-### Content Processing Pipeline
+## Pipeline de status (`ContentStatus`)
+
 ```
-1. PENDING → 2. DOWNLOADING_MEDIA → 3. CONVERTING_AUDIO → 4. TRANSCRIBING_AUDIO → 5. GENERATING_TEXT → 6. REQUEST_PRESENTATION → 7. GENERATING_PRESENTATION → 8. DOWNLOADING_PRESENTATION → 9. COMPLETED
-```
-
-### Processing Steps
-1. **Download**: YouTube videos or uploaded media files
-2. **Convert**: Media to MP3 using FFmpeg
-3. **Transcribe**: Audio to text using OpenAI Whisper
-4. **Generate Text**: Educational content using ChatGPT
-5. **Generate Presentation**: PPTX slides using Gamma API
-
-## Key Components
-
-### Backend Services
-- `ContentService`: Core business logic for content processing
-- `MediaService`: Media file processing and YouTube download
-- `TranscriptionService`: Audio transcription management
-- `TextContentService`: Educational text generation
-- `PresentationService`: Presentation creation and management
-- `BotService`: Background worker that orchestrates processing
-- `OpenAIApi`: Integration with OpenAI (Whisper + ChatGPT)
-- `GammaApiService`: Integration with Gamma for presentations
-- `ConfigService`: Dynamic configuration management
-
-### Frontend Components
-- `ContentForm`: Create/edit content with media upload
-- `ContentDatatable`: List and manage content
-- `TextGenerated`: View generated educational text
-- `PresentationGenerated`: View and download presentations
-- `InputFileSingle`: File upload with preview and metadata
-
-## Database Schema
-
-### Content Model
-```prisma
-model Content {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  subject String
-  language String
-  messageError String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  lastStatus Int @default(0)
-  status Int @default(0)
-  media Media?
-  transcription Transcription?
-  textContent TextContent?
-  presentation Presentation?
-}
-
-model Media {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  contentId String @unique @db.ObjectId
-  duration Int?
-  sizeBytes Int?
-  sourceType SourceType @default(YOUTUBE)
-  youtubeLink String?
-  mediaFile String?
-  mediaDescription String?
-  audioFilenames String[] @default([])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
-}
-
-model Transcription {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  contentId String @unique @db.ObjectId
-  transcriptionText String
-  transcriptFile String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
-}
-
-model TextContent {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  contentId String @unique @db.ObjectId
-  promptText String?
-  generatedText String?
-  textFile String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
-}
-
-model Presentation {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  contentId String @unique @db.ObjectId
-  promptPresentation String?
-  presentationId String?
-  presentationFile String?
-  themeName String?
-  numCards Int?
-  imageOptions String?
-  imageModel String?
-  imageStyle String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
-}
+0 PENDING → 1 DOWNLOADING_MEDIA → 2 CONVERTING_AUDIO → 3 TRANSCRIBING_AUDIO
+→ 4 GENERATING_TEXT → 5 REQUEST_PRESENTATION → 6 GENERATING_PRESENTATION
+→ 7 DOWNLOADING_PRESENTATION → 8 COMPLETED
+9 ERROR | 10 CANCELED | 11 PARTIAL
 ```
 
-## Status Enum
-```typescript
-enum ContentStatus {
-  PENDING = 0,
-  DOWNLOADING_MEDIA = 1,
-  CONVERTING_AUDIO = 2,
-  TRANSCRIBING_AUDIO = 3,
-  GENERATING_TEXT = 4,
-  REQUEST_PRESENTATION = 5,
-  GENERATING_PRESENTATION = 6,
-  DOWNLOADING_PRESENTATION = 7,
-  COMPLETED = 8,
-  ERROR = 9,
-  CANCELED = 10,
-  PARTIAL = 11,
-}
-```
+Ordem do bot: `processDownloadMedia` → `processConversionAudio` → `processTranscription` → `processText` → `processRequestPresentation` → `processPresentationGeneration` → `processDownloadPresentation`.
 
-## File Structure
+`Media.sourceType`: `YOUTUBE` | `UPLOAD`.
 
-### Backend (`/server`)
-```
-src/
-├── modules/
-│   ├── api/                 # External API integrations
-│   │   └── services/
-│   │       ├── openai/      # OpenAI API (Whisper + ChatGPT)
-│   │       └── gamma-api.service.ts  # Gamma API
-│   ├── auth/                # Authentication
-│   ├── bot/                 # Background processing
-│   ├── config/              # Configuration management
-│   ├── content/              # Content management
-│   │   ├── controllers/
-│   │   ├── dto/
-│   │   ├── entities/
-│   │   ├── enum/
-│   │   ├── repositories/
-│   │   └── services/
-│   ├── media/                # Media management
-│   ├── transcription/        # Transcription management
-│   ├── text-content/         # Text content management
-│   └── presentation/         # Presentation management
-│   └── user/                # User management
-├── database/                # Database layer
-├── common/                  # Shared utilities
-└── prisma/                  # Database schema
-```
+## Módulos backend (`server/src/modules/`)
 
-### Frontend (`/client`)
-```
-src/app/
-├── (admin)/                 # Admin panel
-│   ├── panel/
-│   │   ├── generation/contents/
-│   │   │   ├── _components/
-│   │   │   ├── _services/
-│   │   │   ├── text-generated/
-│   │   │   └── presentation-generated/
-│   │   ├── dashboard/
-│   │   ├── users/
-│   │   └── configuration/
-│   └── _configs/
-├── (website)/               # Public website
-└── _common/                 # Shared components
-    ├── components/
-    ├── models/
-    ├── utilities/
-    └── services/
-```
+| Módulo | Papel |
+|--------|--------|
+| `auth` | JWT / Passport |
+| `user` | Usuários, roles, Telegram recovery |
+| `config` | Config dinâmica (inclui chaves de IA) |
+| `api` | `OpenAIApi`, `GammaApiService` |
+| `content` | Orquestração CRUD / regras do conteúdo |
+| `media` | Download, upload, metadados, FFmpeg |
+| `transcription` | Persistência + Whisper |
+| `text-content` | Persistência + ChatGPT |
+| `presentation` | Persistência + Gamma |
+| `processing` | Passos consumidos pelo bot |
+| `bot` | Loop do worker |
 
-## Environment Variables
+Prisma: `server/prisma/schema.prisma`. Migrations de dados: `mongo-migrate-ts` em `server/migrations/`.
 
-### Backend Required
+Modelos principais: `Content`, `Media`, `Transcription` (`transcriptionModel?`), `TextContent` (`textModel?`), `Presentation` (`themeId?`, `themeName?`, `numCards?`, `imageOptions?`, …), `User`, `Config` / `ConfigGroup`.
+
+## Frontend (`client/src/app/`)
+
+- Auth: `(admin)/(auth)/signin|signup|signout` — cookie `auth.token`
+- Painel: `panel/dashboard`, `panel/generation/contents`, `panel/generation/contents/documents/[id]`, `panel/users`, `panel/configuration`, `panel/settings`, `panel/verification/telegram`
+- `(website)/(home)`: apenas exibe o SignIn (não há site marketing)
+- Componentes-chave: `ContentForm`, `ContentDatatable`, documentos em `documents/[id]/_components/` (`Text`, `Presentation`, `FilesItem`)
+- Upload: `InputFileSingle`; URLs públicas `/uploads/medias/...` e `/uploads/docs/...`
+- Temas PrimeReact em `client/src/app/_common/assets/primereact/` são terceiros (vendored no `.gitattributes`)
+
+**Rotas que NÃO existem:** `text-generated/`, `presentation-generated/`. Viewer = `documents/[id]`.
+
+## Regras obrigatórias ao alterar código
+
+1. **MongoDB:** nunca `prisma db push` em banco com dados. Use `yarn generate` + `yarn mongo-migrate:new` / `mongo-migrate:up`.
+2. **Erros do pipeline:** status `ERROR` + mensagem em `messageError`; logs com `coloredLog`.
+3. **Arquivos:** validar tipo/tamanho; limpar arquivos antigos ao atualizar/excluir; respeitar `PATH_UPLOADS` e `MAX_MB_UPLOAD`.
+4. **Formulários:** React Hook Form; uploads via `FormData` (`convertJsonToFormData` quando já usado no fluxo).
+5. **UI:** preferir PrimeReact + padrões existentes do painel; não inventar rotas/componentes desatualizados.
+6. **Segredos:** não commitiar `.env*`; não hardcodar chaves de API.
+7. **Escopo:** mudanças mínimas e alinhadas ao padrão Nest (module → controller → service → repository) e App Router do client.
+
+## Padrões úteis
+
+**Passo do bot/processing:** buscar pendentes por status → processar em paralelo com cuidado → atualizar status → capturar erro com log colorido.
+
+**Form content (client):** `useForm` + estado local → mapear campos → `FormData` → `ContentService.save`.
+
+## Env mínimo (referência)
+
 ```bash
+# server
 DATABASE_URL=mongodb://localhost:27017/genedu
-OPENAI_API_KEY=your_openai_key
-GAMMA_API_KEY=your_gamma_key
-JWT_SECRET=your_jwt_secret
+JWT_SECRET=...
+PORT=3001
+BOT_PORT=3002
+PATH_UPLOADS=../client/public/uploads/
+MAX_MB_UPLOAD=200
+
+# client
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
 ```
 
-## Key Features
-
-### Media Processing
-- YouTube video download using `@distube/ytdl-core`
-- File upload with metadata extraction (size, duration)
-- Audio conversion using FFmpeg
-- Multiple audio chunk processing for large files
-
-### AI Integration
-- **OpenAI Whisper**: Audio transcription
-- **OpenAI ChatGPT**: Educational text generation
-- **Gamma API**: Professional presentation creation
-
-### User Interface
-- Responsive admin panel with dark/light mode
-- Real-time status updates
-- File preview with metadata
-- Download functionality for generated content
-- Toast notifications for user feedback
-
-## Development Guidelines
-
-### Code Style
-- Use TypeScript strict mode
-- Follow NestJS conventions for backend
-- Use React Hook Form for form management
-- Implement proper error handling with colored logs
-- Use PrimeReact components for UI consistency
-
-### Database Operations
-- **NEVER** use `prisma db push` (dangerous for MongoDB)
-- Use `yarn generate` to update Prisma client
-- Use mongo-migrate-ts for schema migrations
-
-### File Handling
-- Store files in `uploads/medias/` directory
-- Extract metadata (size, duration) for uploaded files
-- Clean up old files when updating/deleting content
-- Use proper file validation and error handling
-
-### API Integration
-- Implement proper error handling for external APIs
-- Use colored logs for debugging
-- Handle rate limits and timeouts
-- Implement retry mechanisms where appropriate
-
-## Common Patterns
-
-### Service Methods
-```typescript
-// Standard processing method pattern
-async processStep() {
-  try {
-    const pendings = await this.getPendings(limit)
-    if (pendings?.length <= 0) return result
-    
-    const promises = pendings.map(content => this.processContent(content))
-    const results = await Promise.all(promises)
-    
-    // Handle results and errors
-    return result
-  } catch (error) {
-    coloredLog({ content: `Error: ${error.message}`, color: "red" })
-    throw error
-  }
-}
-```
-
-### Frontend Form Pattern
-```typescript
-// Standard form with react-hook-form
-const { control, handleSubmit, reset } = useForm<Model>()
-const [formData, setFormData] = useState({ ...model })
-
-async function save(params: Model) {
-  const data = { /* map form data */ }
-  const form = convertJsonToFormData(data)
-  const saved = await Service.save(form, params.id)
-  // Handle success/error
-}
-```
-
-## Testing & Debugging
-
-### Logs
-- Use `coloredLog` utility for consistent logging
-- Different colors for different log levels
-- Include context information in log messages
-
-### Error Handling
-- Implement try-catch blocks in all async operations
-- Provide meaningful error messages
-- Update content status to ERROR on failures
-- Store error details in `messageError` field
-
-## Deployment Notes
-
-### Production Setup
-- Use PM2 for process management
-- Configure MongoDB replica set
-- Set up proper environment variables
-- Use production build for frontend
-- Configure file upload limits
-
-### Monitoring
-- Monitor bot service for continuous operation
-- Track API usage and rate limits
-- Monitor file storage usage
-- Set up error alerting
-
-## Recent Updates
-
-### Presentation Generation (Latest)
-- Added Gamma API integration
-- New status: `GENERATING_PRESENTATION`
-- New fields: `promptPresentation`, `presentationFile`, `themeName`, `numCards`, `imageOptions`
-- New frontend component: `PresentationGenerated`
-- Updated workflow to include presentation generation step
-
-### Media Metadata
-- Added `sizeBytes` and `duration` fields
-- Implemented metadata extraction using FFmpeg
-- Updated file upload components to display metadata
-- Added duration formatting utility
-
-### Form Enhancements
-- Added presentation configuration fields
-- Improved file upload with preview
-- Enhanced validation and error handling
-- Added theme and image options selection
-
-## Security Considerations
-- Validate all file uploads
-- Sanitize user inputs
-- Implement proper authentication
-- Use environment variables for sensitive data
-- Validate API responses
-- Implement rate limiting for external APIs
+Documentação humana: `README.md`. Guia de desenvolvimento: `DEVELOPMENT.md`.

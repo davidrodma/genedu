@@ -1,314 +1,239 @@
-# GenEdu - Geração de apresentações por IA a partir de conteúdos audiovisuais.
+# GenEdu — Geração de apresentações por IA a partir de conteúdos audiovisuais
 
-## 🎯 Visão Geral
+## Visão Geral
+
 GenEdu é uma aplicação web que converte arquivos de áudio, vídeos ou links do YouTube em apresentações no estilo PowerPoint, usando Inteligência Artificial Generativa (IAGen). Esta ferramenta foi implementada exclusivamente para pesquisa de campo que resultou no manuscrito do artigo científico intitulado *"Geração de apresentações apoiada por Inteligência Artificial Generativa a partir de conteúdo de áudio"*. O processamento principal é composto por um pipeline que integra três APIs de IA:
+
 - **Whisper:** ferramenta de transcrição de fala da OpenAI que converte arquivos de áudio em texto;
-- **ChatGPT:** modelo de IAGen que receberá o texto transcrito e o reescreverá em um formato didático; 
-- **Gamma:** disponibilizado pela Gamma Tech Inc., para a composição de slides e a geração de imagens. 
+- **ChatGPT:** modelo de IAGen que recebe o texto transcrito e o reescreve em formato didático;
+- **Gamma:** disponibilizado pela Gamma Tech Inc., para a composição de slides e a geração de imagens.
 
-### Relevância ###
-Os slides, em particular, são amplamente utilizados para orientar aulas presenciais, palestras, reuniões, seminários e cursos online, bem como para explicar conceitos e apoiar a exposição oral; no entanto, elaborar apresentações do tipo PowerPoint é uma tarefa que exige tempo, escrita, seleção de exemplos e imagens, edição de conteúdo e diagramação, considerando aspectos estéticos e cognitivos da comunicação. Em um contexto em que profissionais como professores e palestrantes acumulam múltiplas tarefas, ferramentas capazes de auxiliar na elaboração de apresentações podem contribuir para otimizar a elaboração desse material e apoiar o planejamento, já que o GenEdu é capaz de transformar o áudio ou vídeo gravado em pelo menos uma primeira versão de apresentação, aumentando a produtividade e reduzindo o esforço, a escrita, a estruturação, a diagramação e o tempo dedicado. As apresentações resultante da GenEdu assemelha-se à da Figura 1 abaixo:
+### Relevância
 
-[![Arquitetura em alto nível da GenEdu](./presentations-examples.png)](./presentations-examples.png)
+Os slides, em particular, são amplamente utilizados para orientar aulas presenciais, palestras, reuniões, seminários e cursos online, bem como para explicar conceitos e apoiar a exposição oral; no entanto, elaborar apresentações do tipo PowerPoint é uma tarefa que exige tempo, escrita, seleção de exemplos e imagens, edição de conteúdo e diagramação, considerando aspectos estéticos e cognitivos da comunicação. Em um contexto em que profissionais como professores e palestrantes acumulam múltiplas tarefas, ferramentas capazes de auxiliar na elaboração de apresentações podem contribuir para otimizar a elaboração desse material e apoiar o planejamento, já que o GenEdu é capaz de transformar o áudio ou vídeo gravado em pelo menos uma primeira versão de apresentação, aumentando a produtividade e reduzindo o esforço, a escrita, a estruturação, a diagramação e o tempo dedicado. As apresentações resultantes da GenEdu assemelham-se à da Figura 1 abaixo:
 
-## 🏗️ Arquitetura
-O GenEdu foi desenvolvido na linguagem TypeScript, com o framework NestJS, para o backend, e executado em duas instâncias de servidores Node.js: a primeira para receber as requisições do frontend e a segunda para que os bots realizem o processamento intensivo em segundo plano (conversão de áudio, transcrição, geração de conteúdo e criação de slides). Dessa forma, a fila de tarefas pesadas para as APIs Whisper, ChatGPT e Gamma é executada de forma assíncrona no segundo servidor, isolado do restante da aplicação. No frontend, utilizou-se o framework Next.js em outra instância do Node.js, o que permite executar componentes React no servidor quando necessário. Para a persistência de dados, utilizou-se o banco de dados NoSQL MongoDB, com o ORM Prisma. 
+[![Exemplos de apresentações geradas pela GenEdu](./presentations-examples.png)](./presentations-examples.png)
+
+## Arquitetura
+
+O GenEdu foi desenvolvido na linguagem TypeScript, com o framework NestJS (v11), para o backend, e executado em duas instâncias de servidores Node.js: a primeira para receber as requisições do frontend e a segunda para que os bots realizem o processamento intensivo em segundo plano (conversão de áudio, transcrição, geração de conteúdo e criação de slides). Dessa forma, a fila de tarefas pesadas para as APIs Whisper, ChatGPT e Gamma é executada de forma assíncrona no segundo servidor, isolado do restante da aplicação. No frontend, utilizou-se o framework Next.js (v15, App Router) em outra instância do Node.js, o que permite executar componentes React no servidor quando necessário. Para a persistência de dados, utilizou-se o banco de dados NoSQL MongoDB, com o ORM Prisma.
 
 ### Diagramas Arquiteturais
-A Figura 2 abaixo apresenta o diagrama de componentes da arquitetura implantada. A modelagem dos componentes serve para mostrar as interfaces que fazem a ponte entre o modelo lógico e o físico (nó) em tempo de execução. Na camada de apresentação (Presentation Tier), o cliente remoto (Browser) acessa o sistema REST via HTTP. A seguir, na camada de aplicação (Middle Tier), um Reverse Proxy (Nginx) realiza o roteamento para as instâncias internas, encaminhando requisições para o nó do Frontend Server (Node.js/Next.js) ou ao nó do Backend Server (Node.js/Nest.js). As interfaces (ex.: IContent, IMedia, ITranscription, IPresentation) explicitam contratos entre os módulos. O Bot Processing Server é um nó independente que separa o processamento assíncrono do restante da aplicação, isolando em fila, tarefas intensivas. Ainda neste nó, as integrações externas (OpenAI API e Gamma API) são tratadas como serviços consumidos por meio de interfaces, o que evidencia as dependências externas do sistema. Por fim, na camada de dados (Data Tier), o Database Server (MongoDB) é acessado por meio do componente de persistência ORM (Prisma), conforme ilustrado na Figura 2:
+
+A Figura 2 abaixo apresenta o diagrama de componentes da arquitetura implantada. A modelagem dos componentes serve para mostrar as interfaces que fazem a ponte entre o modelo lógico e o físico (nó) em tempo de execução. Na camada de apresentação (Presentation Tier), o cliente remoto (Browser) acessa o sistema REST via HTTP. A seguir, na camada de aplicação (Middle Tier), um Reverse Proxy (Nginx) realiza o roteamento para as instâncias internas, encaminhando requisições para o nó do Frontend Server (Node.js/Next.js) ou ao nó do Backend Server (Node.js/NestJS). As interfaces (ex.: IContent, IMedia, ITranscription, IPresentation) explicitam contratos entre os módulos. O Bot Processing Server é um nó independente que separa o processamento assíncrono do restante da aplicação, isolando em fila tarefas intensivas. Ainda neste nó, as integrações externas (OpenAI API e Gamma API) são tratadas como serviços consumidos por meio de interfaces, o que evidencia as dependências externas do sistema. Por fim, na camada de dados (Data Tier), o Database Server (MongoDB) é acessado por meio do componente de persistência ORM (Prisma), conforme ilustrado na Figura 2:
 
 [![Diagrama de componentes do sistema implantado](./deployment-diagram.png)](./deployment-diagram.png)
 
 Para facilitar a compreensão das tecnologias empregadas, a Figura 3 abaixo apresenta a arquitetura do software em alto nível:
 
-[![Arquitetura em alto nível da GenEdu](./high-level-diagram.png)](./high-level-diagram.png)	
+[![Arquitetura em alto nível da GenEdu](./high-level-diagram.png)](./high-level-diagram.png)
 
 ### Backend (NestJS)
-- **Framework**: NestJS with TypeScript
-- **Database**: MongoDB with Prisma ORM
-- **Processing**: Background bot service
-- **APIs**: OpenAI (Whisper + ChatGPT) and Gamma
-- **File Handling**: Local storage with metadata extraction
-- **Server Installation**: [README](./server/README.md)
+
+- **Framework:** NestJS 11 + TypeScript
+- **Banco de dados:** MongoDB com Prisma ORM (replica set obrigatório)
+- **Processamento:** serviço bot em processo separado (`yarn bot:dev` / `yarn bot:prod`)
+- **APIs externas:** OpenAI (Whisper + ChatGPT) e Gamma (apresentações)
+- **Mídia:** download YouTube via `youtube-dl-exec` (yt-dlp); conversão com FFmpeg
+- **Arquivos:** armazenamento local em `PATH_UPLOADS` (`medias/` e `docs/`)
+- **Chaves de IA:** configuradas no painel (tabela `Config`), não via variáveis de ambiente
+- **Instalação:** [server/README.md](./server/README.md)
 
 ### Frontend (Next.js)
-- **Framework**: Next.js with App Router
-- **UI**: PrimeReact + Tailwind CSS
-- **State**: React Hook Form + Context API
-- **Auth**: JWT-based authentication
-- **Client Installation**: [README](./client/README.md)
 
-## ✨ Features
+- **Framework:** Next.js 15 (App Router) + React 19
+- **UI:** PrimeReact + Tailwind CSS + Sass
+- **Formulários:** React Hook Form
+- **Autenticação:** JWT em cookie `auth.token` (Bearer nas requisições)
+- **Painel:** dashboard, conteúdos, documentos gerados, usuários, configuração e settings
+- **Instalação:** [client/README.md](./client/README.md)
 
-### 🔄 Complete Processing Pipeline
-- **Media Input**: YouTube videos or file uploads
-- **Audio Processing**: Automatic conversion to MP3
-- **Transcription**: AI-powered speech-to-text using OpenAI Whisper
-- **Content Generation**: Educational text creation using ChatGPT
-- **Presentation Creation**: Professional PPTX slides using Gamma API
+## Funcionalidades (v1.0)
 
-### 🎨 Customization Options
-- **Themes**: Multiple presentation themes
-- **Slide Count**: Configurable number of slides
-- **Image Options**: AI-generated, Unsplash, or no images
-- **Language Support**: Multi-language processing
-- **Custom Prompts**: Personalized content generation
+### Pipeline de processamento
 
-### 📊 Admin Dashboard
-- Real-time processing status
-- File management with metadata
-- Download generated content
-- User management and authentication
-- Configuration management
+1. Entrada de mídia (link YouTube ou upload de áudio/vídeo)
+2. Download da mídia (quando YouTube)
+3. Conversão/extração de áudio para MP3 (FFmpeg)
+4. Transcrição com Whisper (OpenAI)
+5. Geração de texto didático com ChatGPT
+6. Solicitação e geração de slides com Gamma
+7. Download do PPTX e disponibilização no painel
 
-## 🚀 Quick Start
+### Personalização da apresentação
 
-### Prerequisites
-- Node.js 18+
-- MongoDB with replica set
-- FFmpeg installed
-- OpenAI API key
-- Gamma API key
+- Temas do Gamma (carregados via API)
+- Quantidade de slides (`numCards`)
+- Opções de imagem (IA, Unsplash ou sem imagens)
+- Idioma do conteúdo e prompts personalizados (texto e apresentação)
 
-### Installation
+### Painel administrativo
 
-1. **Clone the repository**
+- CRUD de conteúdos com status do pipeline
+- Visualização e download de texto e apresentação (`/panel/generation/contents/documents/[id]`)
+- Gestão de usuários (papéis USER/ADMIN)
+- Configuração dinâmica (incluindo chaves OpenAI e Gamma)
+- Tema claro/escuro
+
+## Pipeline e status
+
+```
+PENDING (0)
+→ DOWNLOADING_MEDIA (1)
+→ CONVERTING_AUDIO (2)
+→ TRANSCRIBING_AUDIO (3)
+→ GENERATING_TEXT (4)
+→ REQUEST_PRESENTATION (5)
+→ GENERATING_PRESENTATION (6)
+→ DOWNLOADING_PRESENTATION (7)
+→ COMPLETED (8)
+
+Estados especiais: ERROR (9), CANCELED (10), PARTIAL (11)
+```
+
+O bot executa, em loop, os passos 1–7 do módulo `processing`, com intervalo de ~1s entre ciclos.
+
+## Início rápido
+
+### Pré-requisitos
+
+- Node.js 18+ e Yarn
+- MongoDB com replica set
+- FFmpeg no PATH
+- Contas/chaves OpenAI e Gamma (cadastradas depois no painel)
+
+### Instalação
+
 ```bash
-git clone <repository-url>
+git clone <url-do-repositorio>
 cd genedu
 ```
 
-2. **Backend Setup**
+**Backend**
+
 ```bash
 cd server
 yarn install
 cp .env.example .env
-# Configure environment variables
-yarn generate  # Generate Prisma client
-yarn dev       # Start development server
+cp .env.development.example .env.development
+# Ajuste DATABASE_URL, JWT_SECRET, PATH_UPLOADS, PORT, BOT_PORT
+yarn generate
+yarn mongo-migrate:up
+yarn dev          # API em :3001
 ```
 
-3. **Frontend Setup**
+**Bot** (outro terminal)
+
+```bash
+cd server
+yarn bot:dev      # bot em :3002 (BOT_PORT)
+```
+
+**Frontend** (outro terminal)
+
 ```bash
 cd client
 yarn install
-yarn dev       # Start development server
+# .env.development → NEXT_PUBLIC_API_URL=http://localhost:3001/api
+yarn dev          # UI em :3000
 ```
 
-4. **Bot Service** (separate terminal)
-```bash
-cd server
-yarn bot:dev   # Start background processing bot
-```
+Após o primeiro acesso, configure em **Configuration** as chaves `openai-api-key` e `gamma-api-key`.
 
-### Environment Variables
+### Variáveis de ambiente relevantes
 
-#### Backend (.env)
+**Backend (`server/.env` + `.env.development`)**
+
 ```bash
 DATABASE_URL=mongodb://localhost:27017/genedu
-OPENAI_API_KEY=your_openai_api_key
-GAMMA_API_KEY=your_gamma_api_key
-JWT_SECRET=your_jwt_secret
+JWT_SECRET=your_jwt_secret_here
+PORT=3001
+BOT_PORT=3002
+PATH_UPLOADS=../client/public/uploads/
+MAX_MB_UPLOAD=200
 ```
 
-## 📋 Processing Workflow
+**Frontend (`client/.env.development`)**
 
+```bash
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
 ```
-0. PENDING → 1. DOWNLOADING_MEDIA → 2. CONVERTING_AUDIO → 3. TRANSCRIBING_AUDIO → 4. GENERATING_TEXT → 5. REQUEST_PRESENTATION → 6. GENERATING_PRESENTATION → 7. DOWNLOADING_PRESENTATION → 8. COMPLETED
-```
 
+> Chaves OpenAI/Gamma **não** vão no `.env`: ficam no MongoDB (`Config`), editáveis pelo painel.
 
-### Detailed Steps
-1. **Media Input**: Insert YouTube link or upload media (video/audio) with prompts
-2. **Download Media**: Download YouTube Video
-3. **Convert Audio**: Extract audio from media and convert to optimized mp3
-4. **Transcribe Audio**: Convert audio to text using AI (Whisper)
-5. **Generate Text**: Create educational text from transcription with AI (ChatGPT)
-6. **Generate Presentation**: Create professional slides from content (Gamma Api)
-7. **Complete**: Make files available for download
+Detalhes de desenvolvimento, padrões e troubleshooting: [DEVELOPMENT.md](./DEVELOPMENT.md). Contexto para o Cursor/IA: [.cursorrules](./.cursorrules).
 
-## 🛠️ Development
+## Estrutura do repositório
 
-### Project Structure
 ```
 genedu/
-├── server/                 # NestJS Backend
-│   ├── src/modules/       # Feature modules
-│   ├── prisma/            # Database schema
-│   └── uploads/           # File storage
-├── client/                # Next.js Frontend
-│   ├── src/app/           # App router pages
-│   └── public/            # Static assets
-└── .cursorrules           # Cursor AI context
+├── server/                 # NestJS — API + bot
+│   ├── src/modules/        # auth, user, config, api, content, media,
+│   │                       # transcription, text-content, presentation,
+│   │                       # processing, bot
+│   ├── prisma/             # schema.prisma
+│   └── migrations/         # mongo-migrate-ts
+├── client/                 # Next.js — painel
+│   ├── src/app/(admin)/    # auth + panel
+│   ├── src/app/(website)/  # home (redireciona ao sign-in)
+│   └── public/uploads/     # medias/ e docs/ (não versionar conteúdo)
+├── DEVELOPMENT.md
+├── .cursorrules
+└── .gitattributes          # PrimeReact SCSS marcado como vendored
 ```
 
-### Key Commands
+## Comandos principais
 
-#### Backend
-```bash
-yarn dev          # Development server
-yarn bot:dev      # Background bot
-yarn generate     # Update Prisma client
-yarn build        # Production build
-yarn start:prod   # Production server
-```
+| Onde | Comando | Uso |
+|------|---------|-----|
+| server | `yarn dev` | API (watch) |
+| server | `yarn bot:dev` | Bot (watch) |
+| server | `yarn generate` | Atualiza Prisma Client |
+| server | `yarn mongo-migrate:up` | Aplica migrations |
+| server | `yarn build` / `yarn start:prod` | Produção API |
+| server | `yarn bot:prod` | Produção bot |
+| client | `yarn dev` / `yarn build` / `yarn start` | Frontend |
 
-#### Frontend
-```bash
-yarn dev          # Development server
-yarn build        # Production build
-yarn start        # Production server
-```
+**Importante:** não use `prisma db push` em banco com dados (perigoso no MongoDB). Prefira `yarn generate` + `mongo-migrate-ts`.
 
-### Database Management
-```bash
-# Generate Prisma client (safe)
-yarn generate
+## Configuração auxiliar
 
-# Create migration (development only)
-yarn mongo-migrate:new -n migration_name
+### MongoDB (replica set)
 
-# Apply migrations
-yarn mongo-migrate:up
-
-# Rollback migrations
-yarn mongo-migrate:down
-```
-
-## 🔧 Configuration
-
-### MongoDB Setup
-1. Install MongoDB
-2. Configure replica set in `mongod.conf`:
 ```yaml
+# mongod.conf / mongod.cfg
 replication:
   replSetName: rs0
 ```
-3. Restart MongoDB service
-4. Initialize replica set in mongosh:
+
 ```javascript
+// mongosh
 rs.initiate()
 ```
 
-### FFmpeg Installation
-- **Windows**: Download from https://ffmpeg.org/
-- **macOS**: `brew install ffmpeg`
-- **Linux**: `sudo apt install ffmpeg`
+### FFmpeg
 
-## 📚 API Documentation
+- Windows: https://ffmpeg.org/
+- macOS: `brew install ffmpeg`
+- Linux: `sudo apt install ffmpeg`
 
-### External APIs Used
-- **OpenAI Whisper**: Audio transcription
-- **OpenAI ChatGPT**: Text generation
-- **Gamma API**: Presentation creation
-- **YouTube**: Video downloading
+### Deploy (resumo)
 
-### Internal APIs
-- **Content**: CRUD operations for educational content
-- **Media**: Media file processing and YouTube download
-- **Transcription**: Audio transcription management
-- **TextContent**: Educational text generation
-- **Presentation**: Presentation creation and management
-- **Users**: Authentication and user management
-- **Config**: Dynamic configuration management
+1. Build de `server` e `client`
+2. Variáveis de produção e `PATH_UPLOADS` apontando para storage persistente
+3. PM2: `pm2 start pm2.config.js` e `pm2 start pm2-bot.config.js`
+4. Nginx como reverse proxy (frontend + `/api` → Nest)
+5. Replica set MongoDB e SSL conforme o ambiente
 
-## 🎨 UI Components
+## Segurança
 
-### Key Components
-- `ContentForm`: Create/edit contents with file upload
-- `ContentDatatable`: List and manage contents
-- `Documents`: View generated educational documents, presentations and download
+- Autenticação JWT + papéis USER/ADMIN
+- Senhas com bcrypt
+- Validação de upload (tipo/tamanho via `MAX_MB_UPLOAD`)
+- Segredos e chaves de IA fora do código-fonte versionado (env + Config no banco)
 
-### Styling
-- **Framework**: Tailwind CSS
-- **Components**: PrimeReact
-- **Theme**: Dark/Light mode support
-- **Responsive**: Mobile-first design
+## Licença
 
-## 🔒 Security
+UNLICENSED — uso conforme os termos definidos pelo autor do projeto.
 
-### Authentication
-- JWT-based authentication
-- Role-based access control (USER/ADMIN)
-- Secure password hashing with bcrypt
-
-### File Security
-- File type validation
-- Size limits
-- Secure file storage
-- Input sanitization
-
-## 📊 Monitoring
-
-### Logs
-- Colored console logs for debugging
-- Error tracking and reporting
-- Processing status monitoring
-
-### Health Checks
-- Database connectivity
-- External API status
-- File system health
-- Bot service monitoring
-
-## 🚀 Deployment
-
-### Production Setup
-1. Configure production environment variables
-2. Build both frontend and backend
-3. Set up MongoDB replica set
-4. Configure PM2 for process management
-5. Set up reverse proxy (nginx)
-6. Configure SSL certificates
-
-### PM2 Configuration
-```bash
-# Start services
-pm2 start pm2.config.js    # Main server
-pm2 start pm2-bot.config.js # Bot service
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-### Code Style
-- Use TypeScript strict mode
-- Follow NestJS conventions
-- Use Prettier for formatting
-- Write meaningful commit messages
-
-## 📄 License
-
-This project is licensed under the UNLICENSED license.
-
-## 🆘 Support
-
-For support and questions:
-- Check the documentation
-- Review the `.cursorrules` file for development context
-- Open an issue on GitHub
-
-## 🔄 Recent Updates
-
-### v2.0.0 - Presentation Generation
-- ✅ Added Gamma API integration
-- ✅ New presentation generation workflow
-- ✅ Enhanced UI with presentation viewer
-- ✅ Media metadata extraction
-- ✅ Improved file handling
-
-### v1.0.0 - Core Features
-- ✅ YouTube video processing
-- ✅ Audio transcription
-- ✅ Text generation
-- ✅ Admin dashboard
-- ✅ User authentication
-
----
-
-**GenEdu** - Transforming media into educational excellence through AI 🚀
+**Autor:** [David Rodma](https://github.com/davidrodma/)

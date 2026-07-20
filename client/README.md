@@ -1,57 +1,33 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# GenEdu — Client (Next.js)
 
-## 1 - Installation Packages
+Painel administrativo do GenEdu (Next.js 15 + React 19 + PrimeReact + Tailwind).
 
-Ensure that Node and Yarn are installed on your machine before running the next command.
+Documentação do monorepo: [README.md](../README.md) · [DEVELOPMENT.md](../DEVELOPMENT.md)
+
+## Instalação
 
 ```bash
-$ yarn install
+yarn install
 ```
 
-## 2 - Main Files Configurations
+## Ambiente
 
-All: [`.env`](.env)
+- Desenvolvimento: [`.env.development`](.env.development) → `NEXT_PUBLIC_API_URL=http://localhost:3001/api`
+- Produção: [`.env.production`](.env.production)
 
-Development: [`.env.development`](.env.development)
+Não versionar arquivos `.env` com URLs internas reais se forem sensíveis ao ambiente.
 
-Production: [`.env.prodution`](.env.production)
-
-## 3 - Getting Started
-
-First, run the development server:
+## Execução
 
 ```bash
-#start development
-yarn dev
-
-#start if production
-yarn start
-
-#if build prodution
+yarn dev      # http://localhost:3000
 yarn build
+yarn start    # produção na porta 3000
+yarn lint
 ```
 
-Open [`http://localhost:3000`](http://localhost:3000) with your browser to see the result.
+A API Nest precisa estar em execução (`server`, porta 3001). Uploads públicos ficam em `public/uploads/` (`medias/`, `docs/`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Autor
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
-
-## Developer
-
-- Author - [David Rodma](https://github.com/davidrodma/)
+[David Rodma](https://github.com/davidrodma/)
