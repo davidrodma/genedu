@@ -29,10 +29,6 @@ Para facilitar a compreensão das tecnologias empregadas, a Figura 3 abaixo apre
 [![Arquitetura em alto nível da GenEdu](./high-level-diagram.png)](./high-level-diagram.png)
 
 
-Screenshot da interface gráfica do painel da ferramenta GenEdu (Figura 4):
-
-[![Screenshot da inteface gráfica do painel da ferramenta GenEdu](./genedu-panel.png)](./genedu-panel.png)
-
 ### Backend (NestJS)
 
 - **Framework:** NestJS 11 + TypeScript
@@ -52,6 +48,10 @@ Screenshot da interface gráfica do painel da ferramenta GenEdu (Figura 4):
 - **Autenticação:** JWT em cookie `auth.token` (Bearer nas requisições)
 - **Painel:** dashboard, conteúdos, documentos gerados, usuários, configuração e settings
 - **Instalação:** [client/README.md](./client/README.md)
+
+Screenshot da interface gráfica do painel da ferramenta GenEdu (Figura 4):
+
+[![Screenshot da inteface gráfica do painel da ferramenta GenEdu](./genedu-panel.png)](./genedu-panel.png)
 
 ## Funcionalidades (v1.0)
 
