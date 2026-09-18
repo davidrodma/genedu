@@ -5,20 +5,14 @@
 GenEdu é uma aplicação web que converte arquivos de áudio, vídeos ou links do YouTube em apresentações no estilo PowerPoint, usando Inteligência Artificial Generativa (IAGen). Esta ferramenta foi implementada exclusivamente para pesquisa de campo que resultou no manuscrito do artigo científico intitulado *"Geração de apresentações apoiada por Inteligência Artificial Generativa a partir de conteúdo de áudio"*. O processamento principal é composto por um pipeline que integra três APIs de IA:
 
 - **Whisper:** modelo de transcrição de fala da OpenAI que converte arquivos de áudio em texto;
-- **ChatGPT:** IAGen que recebe o texto transcrito e o prepara para um formato didático;
-- **Gamma:** API da Gamma Tech Inc. para composição de slides e a geração de imagens.
-
-As apresentações resultantes da GenEdu assemelham-se à da Figura 1 abaixo:
-
-[![Exemplos de apresentações geradas pela GenEdu](./presentations-examples.png)](./presentations-examples.png)
-
-Screenshot da inteface gráfica do painel da ferramenta GenEdu (Figura 2):
-
-[![Screenshot da inteface gráfica do painel da ferramenta GenEdu](./genedu-panel.png)](./genedu-panel.png)
+- **ChatGPT:** IAGen que recebe o texto transcrito e o prepara para o formato didático;
+- **Gamma:** API da Gamma Tech Inc., para a composição de slides e a geração de imagens.
 
 ### Relevância
 
-Os slides, em particular, são amplamente utilizados para orientar aulas presenciais, palestras, reuniões, seminários e cursos online, bem como para explicar conceitos e apoiar a exposição oral; no entanto, elaborar apresentações do tipo PowerPoint é uma tarefa que exige tempo, escrita, seleção de exemplos e imagens, edição de conteúdo e diagramação, considerando aspectos estéticos e cognitivos da comunicação. Em um contexto em que profissionais como professores e palestrantes acumulam múltiplas tarefas, ferramentas capazes de auxiliar na elaboração de apresentações podem contribuir para otimizar a elaboração desse material e apoiar o planejamento, já que o GenEdu é capaz de transformar o áudio ou vídeo gravado em pelo menos uma primeira versão de apresentação, aumentando a produtividade e reduzindo o esforço, a escrita, a estruturação, a diagramação e o tempo dedicado. 
+Os slides, em particular, são amplamente utilizados para orientar aulas presenciais, palestras, reuniões, seminários e cursos online, bem como para explicar conceitos e apoiar a exposição oral; no entanto, elaborar apresentações do tipo PowerPoint é uma tarefa que exige tempo, escrita, seleção de exemplos e imagens, edição de conteúdo e diagramação, considerando aspectos estéticos e cognitivos da comunicação. Em um contexto em que profissionais como professores e palestrantes acumulam múltiplas tarefas, ferramentas capazes de auxiliar na elaboração de apresentações podem contribuir para otimizar a elaboração desse material e apoiar o planejamento, já que o GenEdu é capaz de transformar o áudio ou vídeo gravado em pelo menos uma primeira versão de apresentação, aumentando a produtividade e reduzindo o esforço, a escrita, a estruturação, a diagramação e o tempo dedicado. As apresentações resultantes da GenEdu assemelham-se à da Figura 1 abaixo:
+
+[![Exemplos de apresentações geradas pela GenEdu](./presentations-examples.png)](./presentations-examples.png)
 
 ## Arquitetura
 
@@ -26,13 +20,18 @@ O GenEdu foi desenvolvido na linguagem TypeScript, com o framework NestJS (v11),
 
 ### Diagramas Arquiteturais
 
-A Figura 3 abaixo apresenta o diagrama de componentes da arquitetura implantada. A modelagem dos componentes serve para mostrar as interfaces que fazem a ponte entre o modelo lógico e o físico (nó) em tempo de execução. Na camada de apresentação (Presentation Tier), o cliente remoto (Browser) acessa o sistema REST via HTTP. A seguir, na camada de aplicação (Middle Tier), um Reverse Proxy (Nginx) realiza o roteamento para as instâncias internas, encaminhando requisições para o nó do Frontend Server (Node.js/Next.js) ou ao nó do Backend Server (Node.js/NestJS). As interfaces (ex.: IContent, IMedia, ITranscription, IPresentation) explicitam contratos entre os módulos. O Bot Processing Server é um nó independente que separa o processamento assíncrono do restante da aplicação, isolando em fila tarefas intensivas. Ainda neste nó, as integrações externas (OpenAI API e Gamma API) são tratadas como serviços consumidos por meio de interfaces, o que evidencia as dependências externas do sistema. Por fim, na camada de dados (Data Tier), o Database Server (MongoDB) é acessado por meio do componente de persistência ORM (Prisma), conforme ilustrado na Figura 3:
+A Figura 2 abaixo apresenta o diagrama de componentes da arquitetura implantada. A modelagem dos componentes serve para mostrar as interfaces que fazem a ponte entre o modelo lógico e o físico (nó) em tempo de execução. Na camada de apresentação (Presentation Tier), o cliente remoto (Browser) acessa o sistema REST via HTTP. A seguir, na camada de aplicação (Middle Tier), um Reverse Proxy (Nginx) realiza o roteamento para as instâncias internas, encaminhando requisições para o nó do Frontend Server (Node.js/Next.js) ou ao nó do Backend Server (Node.js/NestJS). As interfaces (ex.: IContent, IMedia, ITranscription, IPresentation) explicitam contratos entre os módulos. O Bot Processing Server é um nó independente que separa o processamento assíncrono do restante da aplicação, isolando em fila tarefas intensivas. Ainda neste nó, as integrações externas (OpenAI API e Gamma API) são tratadas como serviços consumidos por meio de interfaces, o que evidencia as dependências externas do sistema. Por fim, na camada de dados (Data Tier), o Database Server (MongoDB) é acessado por meio do componente de persistência ORM (Prisma), conforme ilustrado na Figura 2:
 
 [![Diagrama de componentes do sistema implantado](./deployment-diagram.png)](./deployment-diagram.png)
 
-Para facilitar a compreensão das tecnologias empregadas, a Figura 4 abaixo apresenta a arquitetura do software em alto nível:
+Para facilitar a compreensão das tecnologias empregadas, a Figura 3 abaixo apresenta a arquitetura do software em alto nível:
 
 [![Arquitetura em alto nível da GenEdu](./high-level-diagram.png)](./high-level-diagram.png)
+
+
+Screenshot da interface gráfica do painel da ferramenta GenEdu (Figura 4):
+
+[![Screenshot da inteface gráfica do painel da ferramenta GenEdu](./genedu-panel.png)](./genedu-panel.png)
 
 ### Backend (NestJS)
 
