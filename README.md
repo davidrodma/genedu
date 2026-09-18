@@ -4,15 +4,19 @@
 
 GenEdu é uma aplicação web que converte arquivos de áudio, vídeos ou links do YouTube em apresentações no estilo PowerPoint, usando Inteligência Artificial Generativa (IAGen). Esta ferramenta foi implementada exclusivamente para pesquisa de campo que resultou no manuscrito do artigo científico intitulado *"Geração de apresentações apoiada por Inteligência Artificial Generativa a partir de conteúdo de áudio"*. O processamento principal é composto por um pipeline que integra três APIs de IA:
 
-- **Whisper:** ferramenta de transcrição de fala da OpenAI que converte arquivos de áudio em texto;
+- **Whisper:** modelo de transcrição de fala da OpenAI que converte arquivos de áudio em texto;
 - **ChatGPT:** modelo de IAGen que recebe o texto transcrito e o reescreve em formato didático;
-- **Gamma:** disponibilizado pela Gamma Tech Inc., para a composição de slides e a geração de imagens.
+- **Gamma:** API da Gamma Tech Inc. para composição de slides e a geração de imagens.
 
 ### Relevância
 
 Os slides, em particular, são amplamente utilizados para orientar aulas presenciais, palestras, reuniões, seminários e cursos online, bem como para explicar conceitos e apoiar a exposição oral; no entanto, elaborar apresentações do tipo PowerPoint é uma tarefa que exige tempo, escrita, seleção de exemplos e imagens, edição de conteúdo e diagramação, considerando aspectos estéticos e cognitivos da comunicação. Em um contexto em que profissionais como professores e palestrantes acumulam múltiplas tarefas, ferramentas capazes de auxiliar na elaboração de apresentações podem contribuir para otimizar a elaboração desse material e apoiar o planejamento, já que o GenEdu é capaz de transformar o áudio ou vídeo gravado em pelo menos uma primeira versão de apresentação, aumentando a produtividade e reduzindo o esforço, a escrita, a estruturação, a diagramação e o tempo dedicado. As apresentações resultantes da GenEdu assemelham-se à da Figura 1 abaixo:
 
 [![Exemplos de apresentações geradas pela GenEdu](./presentations-examples.png)](./presentations-examples.png)
+
+Screenshot da inteface gráfica do painel da ferramenta GenEdu (Figura 2):
+
+[![Screenshot da inteface gráfica do painel da ferramenta GenEdu](./genedu-panel.png)](./genedu-panel.png)
 
 ## Arquitetura
 
