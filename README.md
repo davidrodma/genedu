@@ -239,6 +239,6 @@ rs.initiate()
 
 ## Licença
 
-UNLICENSED — uso conforme os termos definidos pelo autor do projeto.
+MIT License — este projeto é livre para uso, cópia, modificação e distribuição, conforme os termos da licença MIT.
 
 **Autor:** [David Rodma](https://github.com/davidrodma/)
